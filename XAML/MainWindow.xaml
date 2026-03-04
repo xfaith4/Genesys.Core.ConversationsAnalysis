@@ -1,0 +1,952 @@
+﻿<Window
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Genesys Conversation Analysis"
+    Width="1440" Height="920"
+    MinWidth="1000" MinHeight="680"
+    WindowStartupLocation="CenterScreen"
+    Background="#1A1D23"
+    Foreground="#E2E5EC"
+    FontFamily="Segoe UI"
+    FontSize="13"
+    Name="MainWindow">
+
+  <Window.Resources>
+
+    <!-- Color palette -->
+    <SolidColorBrush x:Key="BgWindow"     Color="#1A1D23"/>
+    <SolidColorBrush x:Key="BgPanel"      Color="#22262E"/>
+    <SolidColorBrush x:Key="BgControl"    Color="#2C3140"/>
+    <SolidColorBrush x:Key="BgControlHov" Color="#38405A"/>
+    <SolidColorBrush x:Key="BgHeader"     Color="#141720"/>
+    <SolidColorBrush x:Key="Accent"       Color="#0099CC"/>
+    <SolidColorBrush x:Key="AccentHov"    Color="#00B8F0"/>
+    <SolidColorBrush x:Key="TxtPrimary"   Color="#E2E5EC"/>
+    <SolidColorBrush x:Key="TxtMuted"     Color="#8A919F"/>
+    <SolidColorBrush x:Key="Border"       Color="#374151"/>
+    <SolidColorBrush x:Key="BorderLight"  Color="#4B5563"/>
+    <SolidColorBrush x:Key="ColGreen"     Color="#22C55E"/>
+    <SolidColorBrush x:Key="ColRed"       Color="#EF4444"/>
+    <SolidColorBrush x:Key="ColAmber"     Color="#F59E0B"/>
+    <SolidColorBrush x:Key="ColBlue"      Color="#3B82F6"/>
+    <SolidColorBrush x:Key="RowAlt"       Color="#1F232B"/>
+    <SolidColorBrush x:Key="RowSel"       Color="#1D4060"/>
+
+    <!-- Base button style -->
+    <Style x:Key="BtnBase" TargetType="Button">
+      <Setter Property="Background"       Value="#2C3140"/>
+      <Setter Property="Foreground"       Value="#E2E5EC"/>
+      <Setter Property="BorderBrush"      Value="#374151"/>
+      <Setter Property="BorderThickness"  Value="1"/>
+      <Setter Property="Padding"          Value="12,6"/>
+      <Setter Property="Cursor"           Value="Hand"/>
+      <Setter Property="FontSize"         Value="12"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Name="bd"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="#38405A"/>
+                <Setter TargetName="bd" Property="BorderBrush" Value="#4B5563"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="#1A1D23"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.4"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Accent button (run actions) -->
+    <Style x:Key="BtnAccent" TargetType="Button" BasedOn="{StaticResource BtnBase}">
+      <Setter Property="Background"  Value="#0099CC"/>
+      <Setter Property="BorderBrush" Value="#007BA3"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Style.Triggers>
+        <Trigger Property="IsMouseOver" Value="True">
+          <Setter Property="Background" Value="#00B8F0"/>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
+
+    <!-- Danger button -->
+    <Style x:Key="BtnDanger" TargetType="Button" BasedOn="{StaticResource BtnBase}">
+      <Setter Property="Background"  Value="#7F1D1D"/>
+      <Setter Property="BorderBrush" Value="#991B1B"/>
+    </Style>
+
+    <!-- Toggle filter button -->
+    <Style x:Key="BtnToggle" TargetType="ToggleButton">
+      <Setter Property="Background"      Value="#2C3140"/>
+      <Setter Property="Foreground"      Value="#8A919F"/>
+      <Setter Property="BorderBrush"     Value="#374151"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding"         Value="10,4"/>
+      <Setter Property="Cursor"          Value="Hand"/>
+      <Setter Property="FontSize"        Value="11"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <Border Name="bd"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="3"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="bd" Property="Background"  Value="#0C3E55"/>
+                <Setter TargetName="bd" Property="BorderBrush" Value="#0099CC"/>
+                <Setter Property="Foreground" Value="#00CFFF"/>
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="#38405A"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- TextBox style -->
+    <Style x:Key="TxtBoxBase" TargetType="TextBox">
+      <Setter Property="Background"       Value="#2C3140"/>
+      <Setter Property="Foreground"       Value="#E2E5EC"/>
+      <Setter Property="BorderBrush"      Value="#374151"/>
+      <Setter Property="BorderThickness"  Value="1"/>
+      <Setter Property="Padding"          Value="8,5"/>
+      <Setter Property="CaretBrush"       Value="#E2E5EC"/>
+      <Setter Property="SelectionBrush"   Value="#0099CC"/>
+      <Setter Property="FontSize"         Value="12"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TextBox">
+            <Border Name="bd"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="4"
+                    Padding="{TemplateBinding Padding}">
+              <ScrollViewer x:Name="PART_ContentHost"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsFocused" Value="True">
+                <Setter TargetName="bd" Property="BorderBrush" Value="#0099CC"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- ComboBox style (dark themed, full ControlTemplate) -->
+    <Style x:Key="CboBase" TargetType="ComboBox">
+      <Setter Property="Background"        Value="#2C3140"/>
+      <Setter Property="Foreground"        Value="#E2E5EC"/>
+      <Setter Property="BorderBrush"       Value="#374151"/>
+      <Setter Property="BorderThickness"   Value="1"/>
+      <Setter Property="Padding"           Value="8,5"/>
+      <Setter Property="FontSize"          Value="12"/>
+      <Setter Property="MaxDropDownHeight" Value="200"/>
+      <Setter Property="ItemContainerStyle">
+        <Setter.Value>
+          <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="#2C3140"/>
+            <Setter Property="Foreground" Value="#E2E5EC"/>
+            <Setter Property="Padding"    Value="8,5"/>
+            <Style.Triggers>
+              <Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Background" Value="#38405A"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="#1D4060"/>
+              </Trigger>
+            </Style.Triggers>
+          </Style>
+        </Setter.Value>
+      </Setter>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ComboBox">
+            <Grid>
+              <ToggleButton Name="ToggleButton"
+                  Focusable="False"
+                  ClickMode="Press"
+                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                <ToggleButton.Template>
+                  <ControlTemplate TargetType="ToggleButton">
+                    <Border Name="bd"
+                            Background="#2C3140"
+                            BorderBrush="#374151"
+                            BorderThickness="1"
+                            CornerRadius="3">
+                      <Path Data="M 0 0 L 4 4 L 8 0 Z"
+                            Fill="#8A919F"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                      <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="bd" Property="Background" Value="#38405A"/>
+                      </Trigger>
+                      <Trigger Property="IsChecked" Value="True">
+                        <Setter TargetName="bd" Property="Background" Value="#38405A"/>
+                      </Trigger>
+                    </ControlTemplate.Triggers>
+                  </ControlTemplate>
+                </ToggleButton.Template>
+              </ToggleButton>
+              <ContentPresenter Name="ContentSite"
+                  IsHitTestVisible="False"
+                  Content="{TemplateBinding SelectionBoxItem}"
+                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                  Margin="{TemplateBinding Padding}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Left"/>
+              <Popup Name="PART_Popup"
+                  Placement="Bottom"
+                  IsOpen="{TemplateBinding IsDropDownOpen}"
+                  AllowsTransparency="True"
+                  Focusable="False"
+                  PopupAnimation="Slide">
+                <Border Background="#2C3140"
+                        BorderBrush="#374151"
+                        BorderThickness="1"
+                        MaxHeight="200"
+                        SnapsToDevicePixels="True">
+                  <ScrollViewer>
+                    <StackPanel IsItemsHost="True"
+                                KeyboardNavigation.DirectionalNavigation="Contained"/>
+                  </ScrollViewer>
+                </Border>
+              </Popup>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Opacity" Value="0.4"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- Label style -->
+    <Style x:Key="LblSection" TargetType="TextBlock">
+      <Setter Property="Foreground"  Value="#8A919F"/>
+      <Setter Property="FontSize"    Value="10"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Setter Property="Margin"      Value="0,10,0,3"/>
+      <Setter Property="TextWrapping" Value="NoWrap"/>
+    </Style>
+
+    <!-- DataGrid style -->
+    <Style x:Key="DgBase" TargetType="DataGrid">
+      <Setter Property="Background"            Value="#22262E"/>
+      <Setter Property="Foreground"            Value="#E2E5EC"/>
+      <Setter Property="BorderBrush"           Value="#374151"/>
+      <Setter Property="BorderThickness"       Value="1"/>
+      <Setter Property="GridLinesVisibility"   Value="Horizontal"/>
+      <Setter Property="HorizontalGridLinesBrush" Value="#2C3140"/>
+      <Setter Property="RowBackground"         Value="#22262E"/>
+      <Setter Property="AlternatingRowBackground" Value="#1F232B"/>
+      <Setter Property="SelectionMode"         Value="Single"/>
+      <Setter Property="SelectionUnit"         Value="FullRow"/>
+      <Setter Property="CanUserAddRows"        Value="False"/>
+      <Setter Property="CanUserDeleteRows"     Value="False"/>
+      <Setter Property="AutoGenerateColumns"   Value="False"/>
+      <Setter Property="IsReadOnly"            Value="True"/>
+      <Setter Property="FontSize"              Value="12"/>
+      <Setter Property="ColumnHeaderHeight"    Value="30"/>
+      <Setter Property="RowHeight"             Value="28"/>
+      <Setter Property="EnableRowVirtualization" Value="True"/>
+      <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+      <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+    </Style>
+
+    <!-- Tab style -->
+    <Style x:Key="TabBase" TargetType="TabControl">
+      <Setter Property="Background"      Value="#22262E"/>
+      <Setter Property="BorderBrush"     Value="#374151"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="Padding"         Value="0"/>
+    </Style>
+
+    <Style x:Key="TabItemBase" TargetType="TabItem">
+      <Setter Property="Background"      Value="#1A1D23"/>
+      <Setter Property="Foreground"      Value="#8A919F"/>
+      <Setter Property="BorderBrush"     Value="#374151"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding"         Value="16,8"/>
+      <Setter Property="FontSize"        Value="12"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="TabItem">
+            <Border Name="bd" Padding="{TemplateBinding Padding}"
+                    BorderThickness="0,0,0,2" BorderBrush="Transparent"
+                    Background="{TemplateBinding Background}">
+              <ContentPresenter ContentSource="Header"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="bd" Property="BorderBrush" Value="#0099CC"/>
+                <Setter Property="Foreground" Value="#E2E5EC"/>
+                <Setter TargetName="bd" Property="Background" Value="#22262E"/>
+              </Trigger>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Foreground" Value="#C0C8D8"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- ListBox style -->
+    <Style x:Key="LstBase" TargetType="ListBox">
+      <Setter Property="Background"      Value="#22262E"/>
+      <Setter Property="Foreground"      Value="#E2E5EC"/>
+      <Setter Property="BorderBrush"     Value="#374151"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="FontSize"        Value="11"/>
+      <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+    </Style>
+
+    <!-- Separator -->
+    <Style x:Key="SepH" TargetType="Separator">
+      <Setter Property="Background"   Value="#374151"/>
+      <Setter Property="Margin"       Value="0,8"/>
+      <Setter Property="Height"       Value="1"/>
+    </Style>
+
+    <!-- Status badge -->
+    <Style x:Key="StatusBadge" TargetType="Border">
+      <Setter Property="CornerRadius"   Value="3"/>
+      <Setter Property="Padding"        Value="8,3"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+  </Window.Resources>
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="48"/>     <!-- Header bar -->
+      <RowDefinition Height="*"/>      <!-- Content -->
+      <RowDefinition Height="28"/>     <!-- Status bar -->
+    </Grid.RowDefinitions>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- HEADER BAR                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="0" Background="#141720" BorderBrush="#374151" BorderThickness="0,0,0,1">
+      <Grid Margin="16,0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- App title -->
+        <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+          <TextBlock Text="◈" Foreground="#0099CC" FontSize="20" VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <TextBlock Text="Genesys Conversation Analysis" FontSize="15" FontWeight="SemiBold"
+                     Foreground="#E2E5EC" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Connection info + actions -->
+        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+          <!-- Connection status badge -->
+          <Border Name="BdrConnStatus" Style="{StaticResource StatusBadge}" Background="#1A3A1A">
+            <StackPanel Orientation="Horizontal">
+              <Ellipse Name="EllConnDot" Width="8" Height="8" Fill="#22C55E" Margin="0,0,6,0" VerticalAlignment="Center"/>
+              <TextBlock Name="TxtConnStatus" Text="Disconnected" Foreground="#8A919F" FontSize="11" VerticalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+
+          <Button Name="BtnConnect"     Content="Connect"      Style="{StaticResource BtnBase}"  Padding="10,4" FontSize="11" Margin="8,0,0,0"/>
+          <Button Name="BtnDisconnect"  Content="Disconnect"   Style="{StaticResource BtnDanger}" Padding="10,4" FontSize="11" Visibility="Collapsed" Margin="8,0,0,0"/>
+          <Button Name="BtnSettings"    Content="⚙ Settings"   Style="{StaticResource BtnBase}"  Padding="10,4" FontSize="11" Margin="8,0,0,0"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MAIN CONTENT (left config panel + right tabs)                   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <Grid Grid.Row="1">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="265" MinWidth="200" MaxWidth="400"/>
+        <ColumnDefinition Width="4"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
+
+      <!-- ─────────────────────────────────────────────────────────── -->
+      <!-- LEFT: Run Configuration Panel                                -->
+      <!-- ─────────────────────────────────────────────────────────── -->
+      <Border Grid.Column="0" Background="#22262E" BorderBrush="#374151" BorderThickness="0,0,1,0">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel Margin="12,12,12,12">
+
+            <!-- Run Type -->
+            <TextBlock Text="RUN TYPE" Style="{StaticResource LblSection}" Margin="0,0,0,6"/>
+            <StackPanel Orientation="Horizontal">
+              <RadioButton Name="RbPreview"  Content="Preview"  GroupName="RunType" IsChecked="True"
+                           Foreground="#E2E5EC" FontSize="12" VerticalContentAlignment="Center"/>
+              <RadioButton Name="RbFullRun"  Content="Full Run" GroupName="RunType"
+                           Foreground="#E2E5EC" FontSize="12" VerticalContentAlignment="Center" Margin="12,0,0,0"/>
+            </StackPanel>
+
+            <TextBlock Name="TxtRunTypeDesc"
+                       Text="Fast, small page. Use for filter validation."
+                       Foreground="#6B7280" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+            <Separator Style="{StaticResource SepH}"/>
+
+            <!-- Date Range -->
+            <TextBlock Text="DATE RANGE" Style="{StaticResource LblSection}"/>
+            <TextBlock Text="Start" Foreground="#8A919F" FontSize="10" Margin="0,0,0,3"/>
+            <DatePicker Name="DtpStart" SelectedDate="{x:Null}"
+                        Background="#2C3140" Foreground="#E2E5EC"
+                        BorderBrush="#374151" Margin="0,0,0,6"
+                        FontSize="12"/>
+            <TextBlock Text="End" Foreground="#8A919F" FontSize="10" Margin="0,0,0,3"/>
+            <DatePicker Name="DtpEnd" SelectedDate="{x:Null}"
+                        Background="#2C3140" Foreground="#E2E5EC"
+                        BorderBrush="#374151"
+                        FontSize="12"/>
+
+            <Separator Style="{StaticResource SepH}"/>
+
+            <!-- Filters -->
+            <TextBlock Text="FILTERS" Style="{StaticResource LblSection}"/>
+
+            <TextBlock Text="Direction" Foreground="#8A919F" FontSize="10" Margin="0,0,0,3"/>
+            <ComboBox Name="CboDirection" Style="{StaticResource CboBase}" Margin="0,0,0,6">
+              <ComboBoxItem Content="(any)"     IsSelected="True"/>
+              <ComboBoxItem Content="inbound"/>
+              <ComboBoxItem Content="outbound"/>
+            </ComboBox>
+
+            <TextBlock Text="Media Type" Foreground="#8A919F" FontSize="10" Margin="0,0,0,3"/>
+            <ComboBox Name="CboMediaType" Style="{StaticResource CboBase}" Margin="0,0,0,6">
+              <ComboBoxItem Content="(any)"     IsSelected="True"/>
+              <ComboBoxItem Content="voice"/>
+              <ComboBoxItem Content="chat"/>
+              <ComboBoxItem Content="email"/>
+              <ComboBoxItem Content="callback"/>
+              <ComboBoxItem Content="cobrowse"/>
+            </ComboBox>
+
+            <TextBlock Text="Queue ID (optional)" Foreground="#8A919F" FontSize="10" Margin="0,0,0,3"/>
+            <TextBox Name="TxtQueueFilter" Style="{StaticResource TxtBoxBase}"
+                     ToolTip="Paste a Genesys queue GUID to filter" Margin="0,0,0,6"/>
+
+            <TextBlock Text="Preview Page Size" Foreground="#8A919F" FontSize="10" Margin="0,0,0,3"/>
+            <ComboBox Name="CboPreviewPageSize" Style="{StaticResource CboBase}">
+              <ComboBoxItem Content="25"  IsSelected="True"/>
+              <ComboBoxItem Content="50"/>
+              <ComboBoxItem Content="100"/>
+              <ComboBoxItem Content="200"/>
+            </ComboBox>
+
+            <Separator Style="{StaticResource SepH}"/>
+
+            <!-- Run buttons -->
+            <Button Name="BtnRun"       Content="▶  Run"          Style="{StaticResource BtnAccent}"
+                    Margin="0,0,0,6" Height="34" FontSize="13"/>
+            <Button Name="BtnCancelRun" Content="✕  Cancel Run"   Style="{StaticResource BtnDanger}"
+                    Margin="0,0,0,0" Height="28" FontSize="12" Visibility="Collapsed"/>
+
+            <!-- Run progress -->
+            <Border Name="BdrProgress" Visibility="Collapsed" Margin="0,6,0,0">
+              <StackPanel>
+                <TextBlock Name="TxtRunProgress" Text="Initializing..." Foreground="#8A919F" FontSize="10" Margin="0,0,0,4"/>
+                <ProgressBar Name="PbRun" Height="4" IsIndeterminate="True"
+                             Background="#374151" Foreground="#0099CC" BorderThickness="0"/>
+              </StackPanel>
+            </Border>
+
+            <Separator Style="{StaticResource SepH}"/>
+
+            <!-- Recent Runs -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+              <TextBlock Text="RECENT RUNS" Style="{StaticResource LblSection}" Margin="0,0,0,0" VerticalAlignment="Center"/>
+              <Button Name="BtnRefreshRuns" Content="↻" Style="{StaticResource BtnBase}"
+                      Padding="4,2" FontSize="10" Margin="6,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <ListBox Name="LstRecentRuns" Style="{StaticResource LstBase}"
+                     Height="160" Margin="0,0,0,6">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <StackPanel Margin="4,3">
+                    <TextBlock Text="{Binding DisplayName}" Foreground="#E2E5EC" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="{Binding Status}"    Foreground="#8A919F" FontSize="10"/>
+                      <TextBlock Text="|"                   Foreground="#374151" FontSize="10" Margin="4,0"/>
+                      <TextBlock Text="{Binding ItemCount}" Foreground="#8A919F" FontSize="10"/>
+                      <TextBlock Text="records"             Foreground="#6B7280" FontSize="10" Margin="4,0,0,0"/>
+                    </StackPanel>
+                  </StackPanel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Button Name="BtnOpenRunFolder" Content="📂 Open Run Folder" Style="{StaticResource BtnBase}"
+                    Margin="0,0,0,0" FontSize="11"/>
+
+          </StackPanel>
+        </ScrollViewer>
+      </Border>
+
+      <!-- Grid splitter -->
+      <GridSplitter Grid.Column="1" Width="4" HorizontalAlignment="Stretch"
+                    Background="#2C3140" Cursor="SizeWE"/>
+
+      <!-- ─────────────────────────────────────────────────────────── -->
+      <!-- RIGHT: Main Tab Area                                         -->
+      <!-- ─────────────────────────────────────────────────────────── -->
+      <TabControl Grid.Column="2" Name="MainTabControl" Style="{StaticResource TabBase}">
+        <TabControl.ItemContainerStyle>
+          <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}"/>
+        </TabControl.ItemContainerStyle>
+
+        <!-- ═══════════ TAB 1: CONVERSATIONS ═══════════ -->
+        <TabItem Header="Conversations" Name="TabConversations">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>   <!-- Toolbar: search + quick filters + export -->
+              <RowDefinition Height="*"/>      <!-- DataGrid -->
+              <RowDefinition Height="Auto"/>   <!-- Paging bar -->
+            </Grid.RowDefinitions>
+
+            <!-- Toolbar -->
+            <Border Grid.Row="0" Background="#1A1D23" BorderBrush="#374151" BorderThickness="0,0,0,1" Padding="10,8">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: search + quick filters -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBox Name="TxtSearch" Style="{StaticResource TxtBoxBase}"
+                           Width="220" Height="28"
+                           ToolTip="Search by conversation ID, queue, direction, media type..."/>
+                  <TextBlock Text="🔍" Foreground="#6B7280" VerticalAlignment="Center" Margin="-34,0,6,0" IsHitTestVisible="False"/>
+
+                  <Separator Width="1" Height="20" Background="#374151" Margin="8,0"/>
+
+                  <TextBlock Text="Filter:" Foreground="#8A919F" FontSize="11" VerticalAlignment="Center"/>
+                  <ToggleButton Name="TbtnInbound"      Content="Inbound"      Style="{StaticResource BtnToggle}" Margin="6,0,0,0"/>
+                  <ToggleButton Name="TbtnOutbound"     Content="Outbound"     Style="{StaticResource BtnToggle}" Margin="4,0,0,0"/>
+                  <ToggleButton Name="TbtnVoiceOnly"    Content="Voice"        Style="{StaticResource BtnToggle}" Margin="4,0,0,0"/>
+                  <ToggleButton Name="TbtnHasMOS"       Content="Has MOS"      Style="{StaticResource BtnToggle}" Margin="4,0,0,0"/>
+                  <ToggleButton Name="TbtnHasHolds"     Content="Has Holds"    Style="{StaticResource BtnToggle}" Margin="4,0,0,0"/>
+                  <ToggleButton Name="TbtnDisconnected" Content="Disconnected" Style="{StaticResource BtnToggle}" Margin="4,0,0,0"/>
+                  <Button Name="BtnClearFilters" Content="✕ Clear" Style="{StaticResource BtnBase}" Padding="8,4" FontSize="11" Margin="8,0,0,0"/>
+                </StackPanel>
+
+                <!-- Right: export actions -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <Button Name="BtnExportPage" Content="⬇ Export Page"    Style="{StaticResource BtnBase}" FontSize="11" Padding="10,4"/>
+                  <Button Name="BtnExportRun"  Content="⬇ Export All Run" Style="{StaticResource BtnBase}" FontSize="11" Padding="10,4" Margin="6,0,0,0"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Conversation DataGrid -->
+            <DataGrid Grid.Row="1" Name="DgConversations" Style="{StaticResource DgBase}">
+              <DataGrid.ContextMenu>
+                <ContextMenu Name="DgContextMenu">
+                  <MenuItem Name="CmiCopyId"         Header="Copy Conversation ID"/>
+                  <MenuItem Name="CmiCopyRow"        Header="Copy Row as CSV"/>
+                  <Separator/>
+                  <MenuItem Name="CmiOpenDrilldown"  Header="Open Drilldown"/>
+                  <MenuItem Name="CmiExportJson"     Header="Export to JSON"/>
+                </ContextMenu>
+              </DataGrid.ContextMenu>
+
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Conversation ID"  Binding="{Binding ConversationId}"  Width="260" MinWidth="120">
+                  <DataGridTextColumn.ElementStyle>
+                    <Style TargetType="TextBlock">
+                      <Setter Property="FontFamily"  Value="Cascadia Mono, Consolas, Courier New"/>
+                      <Setter Property="FontSize"    Value="11"/>
+                      <Setter Property="Foreground"  Value="#7DD3FC"/>
+                    </Style>
+                  </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Start Time"       Binding="{Binding StartTime}"       Width="150" MinWidth="100"/>
+                <DataGridTextColumn Header="End / Duration"   Binding="{Binding Duration}"        Width="80"  MinWidth="60"/>
+                <DataGridTextColumn Header="Direction"        Binding="{Binding Direction}"       Width="80"  MinWidth="60"/>
+                <DataGridTextColumn Header="Queue"            Binding="{Binding Queue}"           Width="160" MinWidth="80"/>
+                <DataGridTextColumn Header="Media"            Binding="{Binding MediaTypes}"      Width="70"  MinWidth="50"/>
+                <DataGridTextColumn Header="Participants"     Binding="{Binding Participants}"    Width="90"  MinWidth="60"/>
+                <DataGridTextColumn Header="Disconnect"       Binding="{Binding DisconnectType}"  Width="90"  MinWidth="60"/>
+                <DataGridTextColumn Header="MOS"              Binding="{Binding MOS}"             Width="60"  MinWidth="50"/>
+              </DataGrid.Columns>
+
+              <!-- Row selection highlight style -->
+              <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                  <Setter Property="Background" Value="Transparent"/>
+                  <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                      <Setter Property="Background" Value="#1D4060"/>
+                      <Setter Property="Foreground" Value="#FFFFFF"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter Property="Background" Value="#2A3050"/>
+                    </Trigger>
+                  </Style.Triggers>
+                </Style>
+              </DataGrid.RowStyle>
+
+              <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                  <Setter Property="Background"  Value="#1A1D23"/>
+                  <Setter Property="Foreground"  Value="#8A919F"/>
+                  <Setter Property="Padding"     Value="8,6"/>
+                  <Setter Property="FontSize"    Value="11"/>
+                  <Setter Property="FontWeight"  Value="SemiBold"/>
+                  <Setter Property="BorderBrush" Value="#374151"/>
+                  <Setter Property="BorderThickness" Value="0,0,1,1"/>
+                </Style>
+              </DataGrid.ColumnHeaderStyle>
+            </DataGrid>
+
+            <!-- Paging bar -->
+            <Border Grid.Row="2" Background="#1A1D23" BorderBrush="#374151" BorderThickness="0,1,0,0" Padding="10,6">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                  <Button Name="BtnPrevPage" Content="◄ Prev" Style="{StaticResource BtnBase}" Padding="10,4" FontSize="11" IsEnabled="False"/>
+                  <TextBlock Name="TxtPageInfo" Text="No data loaded" Foreground="#8A919F" FontSize="11" VerticalAlignment="Center" Margin="10,0"/>
+                  <Button Name="BtnNextPage" Content="Next ►" Style="{StaticResource BtnBase}" Padding="10,4" FontSize="11" IsEnabled="False"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="Page size:" Foreground="#6B7280" FontSize="11" VerticalAlignment="Center"/>
+                  <ComboBox Name="CboPageSize" Width="60" Style="{StaticResource CboBase}" FontSize="11" Margin="6,0,0,0">
+                    <ComboBoxItem Content="25"/>
+                    <ComboBoxItem Content="50"  IsSelected="True"/>
+                    <ComboBoxItem Content="100"/>
+                    <ComboBoxItem Content="200"/>
+                  </ComboBox>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </Grid>
+        </TabItem>
+
+        <!-- ═══════════ TAB 2: DRILLDOWN ═══════════ -->
+        <TabItem Header="Drilldown" Name="TabDrilldown" IsEnabled="False">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Drilldown header -->
+            <Border Grid.Row="0" Background="#1A1D23" BorderBrush="#374151" BorderThickness="0,0,0,1" Padding="12,8">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Name="BtnBackToList" Grid.Column="0" Content="◄ Back"
+                        Style="{StaticResource BtnBase}" Padding="10,4" FontSize="11"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0">
+                  <TextBlock Text="Conversation: " Foreground="#8A919F" FontSize="12" VerticalAlignment="Center"/>
+                  <TextBlock Name="TxtDrilldownId" Text="(none selected)"
+                             Foreground="#7DD3FC" FontFamily="Cascadia Mono, Consolas, Courier New"
+                             FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                  <Button Name="BtnDrillCopyId"    Content="Copy ID"    Style="{StaticResource BtnBase}" Padding="8,4" FontSize="11"/>
+                  <Button Name="BtnDrillExportJson" Content="Export JSON" Style="{StaticResource BtnBase}" Padding="8,4" FontSize="11" Margin="6,0,0,0"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Drilldown sub-tabs -->
+            <TabControl Grid.Row="1" Name="TabDrilldown2" Style="{StaticResource TabBase}">
+              <TabControl.ItemContainerStyle>
+                <Style TargetType="TabItem" BasedOn="{StaticResource TabItemBase}"/>
+              </TabControl.ItemContainerStyle>
+
+              <!-- Summary sub-tab -->
+              <TabItem Header="Summary">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                  <Grid Name="GridDrillSummary" Margin="20,16">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="180"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="180"/>
+                      <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                      <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Labels column 1 -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Conversation ID"  Foreground="#8A919F" FontSize="11" Margin="0,6"/>
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Start Time"       Foreground="#8A919F" FontSize="11" Margin="0,6"/>
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="End Time"         Foreground="#8A919F" FontSize="11" Margin="0,6"/>
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Duration"         Foreground="#8A919F" FontSize="11" Margin="0,6"/>
+
+                    <!-- Values column 1 -->
+                    <TextBlock Name="TxtSumId"    Grid.Row="0" Grid.Column="1" Text="" Foreground="#7DD3FC" FontFamily="Consolas" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumStart" Grid.Row="1" Grid.Column="1" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumEnd"   Grid.Row="2" Grid.Column="1" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumDur"   Grid.Row="3" Grid.Column="1" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+
+                    <!-- Labels column 2 -->
+                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Direction"        Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Participants"     Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="2" Grid.Column="2" Text="Media Types"      Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="3" Grid.Column="2" Text="Disconnect Type"  Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="4" Grid.Column="2" Text="Queue(s)"         Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="5" Grid.Column="2" Text="Hold Count"       Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="6" Grid.Column="2" Text="Transfer Count"   Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+                    <TextBlock Grid.Row="7" Grid.Column="2" Text="MOS (avg/min)"    Foreground="#8A919F" FontSize="11" Margin="20,6,0,6"/>
+
+                    <!-- Values column 2 -->
+                    <TextBlock Name="TxtSumDir"       Grid.Row="0" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumParts"     Grid.Row="1" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumMedia"     Grid.Row="2" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumDisconn"   Grid.Row="3" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumQueue"     Grid.Row="4" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumHolds"     Grid.Row="5" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumTransfers" Grid.Row="6" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                    <TextBlock Name="TxtSumMos"       Grid.Row="7" Grid.Column="3" Text="" Foreground="#E2E5EC" FontSize="11" Margin="0,6"/>
+                  </Grid>
+                </ScrollViewer>
+              </TabItem>
+
+              <!-- Participants sub-tab -->
+              <TabItem Header="Participants">
+                <DataGrid Name="DgParticipants" Style="{StaticResource DgBase}" Margin="0">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="Purpose"     Binding="{Binding Purpose}"    Width="100"/>
+                    <DataGridTextColumn Header="User ID"     Binding="{Binding UserId}"     Width="260"/>
+                    <DataGridTextColumn Header="Name"        Binding="{Binding Name}"       Width="160"/>
+                    <DataGridTextColumn Header="Media Type"  Binding="{Binding MediaType}"  Width="90"/>
+                    <DataGridTextColumn Header="Direction"   Binding="{Binding Direction}"  Width="80"/>
+                    <DataGridTextColumn Header="Queue"       Binding="{Binding Queue}"      Width="150"/>
+                    <DataGridTextColumn Header="MOS"         Binding="{Binding Mos}"        Width="60"/>
+                  </DataGrid.Columns>
+                </DataGrid>
+              </TabItem>
+
+              <!-- Segments/Timeline sub-tab -->
+              <TabItem Header="Segments">
+                <DataGrid Name="DgSegments" Style="{StaticResource DgBase}" Margin="0">
+                  <DataGrid.Columns>
+                    <DataGridTextColumn Header="#"            Binding="{Binding SeqNo}"       Width="40"/>
+                    <DataGridTextColumn Header="Participant"  Binding="{Binding Participant}"  Width="100"/>
+                    <DataGridTextColumn Header="Segment Type" Binding="{Binding SegmentType}"  Width="110"/>
+                    <DataGridTextColumn Header="Start"        Binding="{Binding SegStart}"     Width="150"/>
+                    <DataGridTextColumn Header="End"          Binding="{Binding SegEnd}"       Width="150"/>
+                    <DataGridTextColumn Header="Duration"     Binding="{Binding Duration}"     Width="80"/>
+                    <DataGridTextColumn Header="Disconnect"   Binding="{Binding DisconnectType}" Width="90"/>
+                    <DataGridTextColumn Header="Queue / Flow" Binding="{Binding QueueFlow}"    Width="*"/>
+                  </DataGrid.Columns>
+                  <DataGrid.RowStyle>
+                    <Style TargetType="DataGridRow">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsHold}" Value="True">
+                          <Setter Property="Background" Value="#2A1A0A"/>
+                          <Setter Property="Foreground" Value="#F59E0B"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding IsTransfer}" Value="True">
+                          <Setter Property="Background" Value="#0A1A2A"/>
+                          <Setter Property="Foreground" Value="#3B82F6"/>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </DataGrid.RowStyle>
+                </DataGrid>
+              </TabItem>
+
+              <!-- Attributes sub-tab -->
+              <TabItem Header="Attributes">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                  </Grid.RowDefinitions>
+                  <TextBox Grid.Row="0" Name="TxtAttrSearch" Style="{StaticResource TxtBoxBase}"
+                           Margin="10,10,10,6"
+                           ToolTip="Search attributes by key or value"/>
+                  <DataGrid Grid.Row="1" Name="DgAttributes" Style="{StaticResource DgBase}" Margin="0,0,0,0">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="Key"   Binding="{Binding Key}"   Width="250"/>
+                      <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+                    </DataGrid.Columns>
+                  </DataGrid>
+                </Grid>
+              </TabItem>
+
+              <!-- MOS / Quality sub-tab -->
+              <TabItem Header="MOS / Quality">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                  <StackPanel Name="PnlMos" Margin="20,16">
+                    <TextBlock Text="No MOS data for this conversation." Name="TxtNoMos"
+                               Foreground="#8A919F" FontSize="12"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+
+              <!-- Raw JSON sub-tab -->
+              <TabItem Header="Raw JSON">
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                  </Grid.RowDefinitions>
+                  <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="8,6">
+                    <Button Name="BtnCopyJson"   Content="Copy All JSON" Style="{StaticResource BtnBase}" Padding="8,4" FontSize="11"/>
+                    <Button Name="BtnExpandJson" Content="Expand All"    Style="{StaticResource BtnBase}" Padding="8,4" FontSize="11" Margin="6,0,0,0"/>
+                  </StackPanel>
+                  <TextBox Grid.Row="1" Name="TxtRawJson"
+                           Background="#141720"
+                           Foreground="#A8D8A8"
+                           FontFamily="Cascadia Mono, Consolas, Courier New"
+                           FontSize="11"
+                           IsReadOnly="True"
+                           TextWrapping="NoWrap"
+                           VerticalScrollBarVisibility="Auto"
+                           HorizontalScrollBarVisibility="Auto"
+                           AcceptsReturn="True"
+                           BorderThickness="0"
+                           Padding="10"/>
+                </Grid>
+              </TabItem>
+
+            </TabControl>
+          </Grid>
+        </TabItem>
+
+        <!-- ═══════════ TAB 3: RUN CONSOLE ═══════════ -->
+        <TabItem Header="Run Console" Name="TabConsole">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Console toolbar -->
+            <Border Grid.Row="0" Background="#1A1D23" BorderBrush="#374151" BorderThickness="0,0,0,1" Padding="10,8">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                  <TextBlock Text="Run Status:" Foreground="#8A919F" FontSize="11" VerticalAlignment="Center"/>
+                  <Border Name="BdrRunStatus" Style="{StaticResource StatusBadge}" Background="#1A1A2A" Margin="8,0,0,0">
+                    <StackPanel Orientation="Horizontal">
+                      <Ellipse Name="EllRunDot" Width="8" Height="8" Fill="#8A919F" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                      <TextBlock Name="TxtRunStatus" Text="Ready" Foreground="#8A919F" FontSize="11" VerticalAlignment="Center"/>
+                    </StackPanel>
+                  </Border>
+
+                  <Separator Width="1" Height="16" Background="#374151" Margin="10,0"/>
+                  <TextBlock Name="TxtConsoleRunPath" Text="" Foreground="#6B7280" FontSize="10"
+                             VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="400"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                  <Button Name="BtnCopyDiagnostics" Content="📋 Copy Diagnostics" Style="{StaticResource BtnBase}" Padding="10,4" FontSize="11"/>
+                  <Button Name="BtnClearConsole"    Content="Clear"               Style="{StaticResource BtnBase}" Padding="10,4" FontSize="11" Margin="6,0,0,0"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Events log -->
+            <DataGrid Grid.Row="1" Name="DgConsoleEvents" Style="{StaticResource DgBase}"
+                      Background="#0E1015" Foreground="#A8D8A8"
+                      FontFamily="Cascadia Mono, Consolas, Courier New" FontSize="11"
+                      RowHeight="22" ColumnHeaderHeight="26">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Timestamp"  Binding="{Binding Ts}"      Width="180"/>
+                <DataGridTextColumn Header="Level"      Binding="{Binding Level}"    Width="60"/>
+                <DataGridTextColumn Header="Event"      Binding="{Binding Event}"    Width="180"/>
+                <DataGridTextColumn Header="Message"    Binding="{Binding Message}"  Width="*"/>
+              </DataGrid.Columns>
+              <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                  <Setter Property="Background" Value="Transparent"/>
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding Level}" Value="ERROR">
+                      <Setter Property="Foreground" Value="#EF4444"/>
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Level}" Value="WARN">
+                      <Setter Property="Foreground" Value="#F59E0B"/>
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </DataGrid.RowStyle>
+            </DataGrid>
+          </Grid>
+        </TabItem>
+
+      </TabControl>
+    </Grid>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- STATUS BAR                                                       -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <StatusBar Grid.Row="2" Background="#141720" Foreground="#8A919F" BorderBrush="#374151" BorderThickness="0,1,0,0">
+      <StatusBarItem>
+        <TextBlock Name="TxtStatusMain" Text="Ready" Foreground="#8A919F" FontSize="11"/>
+      </StatusBarItem>
+      <Separator Background="#374151"/>
+      <StatusBarItem>
+        <TextBlock Name="TxtStatusCount" Text="0 records" Foreground="#8A919F" FontSize="11"/>
+      </StatusBarItem>
+      <Separator Background="#374151"/>
+      <StatusBarItem>
+        <TextBlock Name="TxtStatusRun" Text="No active run" Foreground="#8A919F" FontSize="11"/>
+      </StatusBarItem>
+      <StatusBarItem HorizontalAlignment="Right">
+        <TextBlock Name="TxtStatusVersion" Text="v1.0  |  Genesys.Core-first" Foreground="#4B5563" FontSize="10"/>
+      </StatusBarItem>
+    </StatusBar>
+
+  </Grid>
+</Window>
