@@ -29,7 +29,7 @@ Add-Type -AssemblyName System.Windows.Forms
 # NOTE: Genesys.Core is NOT imported here. Only CoreAdapter may import it.
 Import-Module (Join-Path -Path $script:AppRoot -ChildPath 'App.Config.psm1')    -Force -ErrorAction Stop
 Import-Module (Join-Path -Path $script:AppRoot -ChildPath 'App.Auth.psm1')      -Force -ErrorAction Stop
-Import-Module (Join-Path -Path $script:AppRoot -ChildPath 'App.Index.psm1')     -Force -ErrorAction Stop
+Import-Module (Join-Path -Path $script:AppRoot -ChildPath 'App.Index.psm1')     -Force -DisableNameChecking -ErrorAction Stop
 Import-Module (Join-Path -Path $script:AppRoot -ChildPath 'App.Export.psm1')    -Force -ErrorAction Stop
 Import-Module (Join-Path -Path $script:AppRoot -ChildPath 'App.CoreAdapter.psm1') -Force -ErrorAction Stop
 

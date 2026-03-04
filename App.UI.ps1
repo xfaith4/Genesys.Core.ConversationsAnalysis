@@ -1151,18 +1151,18 @@ function Show-SettingsDialog {
         $tb.Foreground = [System.Windows.Media.Brushes]::White
         $tb.BorderBrush = [System.Windows.Media.SolidColorBrush]::new([System.Windows.Media.Color]::FromRgb(55,65,81))
         $tb.Padding = [System.Windows.Thickness]::new(6,4,6,4); $tb.FontSize = 11
-        $row.Children.Add($lb)
-        $row.Children.Add($tb)
-        @{ Row = $row; TextBox = $tb }
+        [void]$row.Children.Add($lb)
+        [void]$row.Children.Add($tb)
+        return [pscustomobject]@{ Row = $row; TextBox = $tb }
     }
 
     $rowCore   = & $mkRow 'Core Module Path'  ([string]$cfg.CoreModulePath)
     $rowCatalog= & $mkRow 'Catalog Path'      ([string]$cfg.CatalogPath)
     $rowOutput = & $mkRow 'Output Root'       ([string]$cfg.OutputRoot)
 
-    $sp.Children.Add($rowCore.Row)
-    $sp.Children.Add($rowCatalog.Row)
-    $sp.Children.Add($rowOutput.Row)
+    [void]$sp.Children.Add($rowCore.Row)
+    [void]$sp.Children.Add($rowCatalog.Row)
+    [void]$sp.Children.Add($rowOutput.Row)
 
     $btnSave = [System.Windows.Controls.Button]::new()
     $btnSave.Content = 'Save'; $btnSave.Width = 80; $btnSave.Height = 32
@@ -1179,7 +1179,7 @@ function Show-SettingsDialog {
         $dlg.Close()
     })
 
-    $sp.Children.Add($btnSave)
+    [void]$sp.Children.Add($btnSave)
     $dlg.Content = $sp
     $dlg.ShowDialog() | Out-Null
 }
