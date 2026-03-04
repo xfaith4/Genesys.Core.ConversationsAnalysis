@@ -902,7 +902,7 @@ function Show-ConnectDialog {
     $dlg.Content = $grid
 
     # ── State
-    $dlgResult = @{ Success = $false; Headers = $null; Region = '' }
+    $dlgResult = [pscustomobject]@{ Success = $false; Headers = $null; Region = '' }
     $pkceCtx   = @{
         Runspace = $null
         PS = $null
@@ -948,10 +948,13 @@ function Show-ConnectDialog {
         $pkceCtx.AsyncResult = $null
     }
 
-    $schedulePkceCleanup = {
-        [void]$dlg.Dispatcher.BeginInvoke([System.Action]{
-            & $queuePkceCleanup
-        }, [System.Windows.Threading.DispatcherPriority]::Background)
+    $closePkceContext = {
+        if ($pkceCtx.SyncHash) { $pkceCtx.SyncHash.CancelRequested = $true }
+        if ($pkceCtx.Timer) {
+            try { $pkceCtx.Timer.Stop() } catch {}
+            $pkceCtx.Timer = $null
+        }
+        & $queuePkceCleanup
     }
 
     # ── Radio toggle handlers
@@ -968,16 +971,8 @@ function Show-ConnectDialog {
 
     # ── Cancel / cleanup
     $btnCancel.Add_Click({
-        if ($pkceCtx.SyncHash) { $pkceCtx.SyncHash.CancelRequested = $true }
-        if ($pkceCtx.Timer) { $pkceCtx.Timer.Stop() }
-        & $schedulePkceCleanup
+        & $closePkceContext
         $dlg.Close()
-    })
-
-    $dlg.Add_Closed({
-        if ($pkceCtx.SyncHash) { $pkceCtx.SyncHash.CancelRequested = $true }
-        if ($pkceCtx.Timer) { $pkceCtx.Timer.Stop() }
-        & $schedulePkceCleanup
     })
 
     # ── Connect (mode-aware)
@@ -1113,6 +1108,7 @@ function Show-ConnectDialog {
         $dlg.ShowDialog() | Out-Null
     }
     finally {
+        & $closePkceContext
         # Defensive: if modal owner state gets stuck, force the main window interactive again.
         try { $window.IsEnabled = $true } catch {}
         try { $window.Activate() } catch {}
@@ -1195,7 +1191,31 @@ $ctrl.RbFullRun.Add_Checked({ $ctrl.TxtRunTypeDesc.Text = 'Job-based bulk extrac
 
 # --- Connect
 $ctrl.BtnConnect.Add_Click({
-    $result = Show-ConnectDialog
+    try {
+        $resultRaw = Show-ConnectDialog
+    }
+    catch {
+        [System.Windows.MessageBox]::Show(
+            "Connect dialog failed:`n$($_)",
+            'UI Error',
+            [System.Windows.MessageBoxButton]::OK,
+            [System.Windows.MessageBoxImage]::Error)
+        return
+    }
+
+    # Show-ConnectDialog may emit incidental pipeline output from WPF add-method calls.
+    # Normalize to the last object that actually has a Success property.
+    $result = $null
+    foreach ($item in @($resultRaw)) {
+        if ($null -eq $item) { continue }
+        if ($item.PSObject -and $item.PSObject.Properties.Match('Success').Count -gt 0) {
+            $result = $item
+        }
+    }
+
+    if ($null -eq $result) { return }
+    if (-not [bool]$result.Success) { return }
+
     if ($result.Success) {
         $info = Get-ConnectionInfo
         if ($info) { Set-ConnectionStatus -Connected $true -Label "$($info.Region)" }
